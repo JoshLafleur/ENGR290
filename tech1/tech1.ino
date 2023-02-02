@@ -60,7 +60,7 @@ void loop() {
     analogWrite(11, 255);
   }
   else {
-    analogWrite(11, 255*((distance_cm - 15)/30);
+    analogWrite(11, 255*((distance_cm - 15)/30));
   }
   Serial.println(" cm");
 
