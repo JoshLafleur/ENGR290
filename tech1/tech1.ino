@@ -50,25 +50,17 @@ void loop() {
   // Get a distance measurement and store it as distance_cm:
   distance_cm = mySensor.distance();
 
-  static uint8_t tmp = 0;
-
-  tmp += 50;
-
-  analogWrite(11, tmp);
-
   // Print the measured distance to the serial monitor:
   Serial.print("Mean distance: ");
   Serial.print(distance_cm);
 
   if (distance_cm <= 15) {
-    // 100%
-    //analogWrite(D11, 255); @TODO: how the hell do we control "D3"? what is our interface to it???
+    analogWrite(11, 0);
   } else if (distance_cm > 45) {
-    // 0%
-    //digitalWrite(D11, 0); 
+    analogWrite(11, 255);
   }
   else {
-    // scale based on value
+    analogWrite(11, 255*((distance_cm - 15)/30);
   }
   Serial.println(" cm");
 
