@@ -1,27 +1,6 @@
-// int analogReading = 0;
-
-// void setup() {
-//   // put your setup code here, to run once:
-//   Serial.begin(9600);
-//   pinMode(A0, INPUT);
-// }
-
-// void loop() {
-//   // put your main code here, to run repeatedly:
-//   if (Serial.available() > 0) {
-//     char byteBuffer = Serial.read();
-//     analogReading = analogRead(A0);
-//     Serial.print("analog reading:");
-//     Serial.println(analogReading);
-//   }
-// }
-
-// src: https://www.makerguides.com/sharp-gp2y0a21yk0f-ir-distance-sensor-arduino-tutorial/
-
-/*SHARP GP2Y0A21YK0F IR distance sensor with Arduino and SharpIR library example code. More info: https://www.makerguides.com */
-
 // Include the library:
 #include "SharpIR.h"
+#include "HCSR04.h"
 
 // Define model and input pin:
 #define IRPin A0
@@ -39,6 +18,7 @@ int distance_cm;
 
 // Create a new instance of the SharpIR class:
 SharpIR mySensor = SharpIR(IRPin, model);
+UltraSonicDistanceSensor distanceSensor(12, 8);  // Initialize sensor that uses digital pins 13 and 12.
 
 void setup() {
   // Begin serial communication at a baudrate of 9600:
@@ -48,8 +28,9 @@ void setup() {
 
 void loop() {
   // Get a distance measurement and store it as distance_cm:
-  distance_cm = mySensor.distance();
-
+  //distance_cm = mySensor.distance();
+  distance_cm = distanceSensor.measureDistanceCm();
+  
   // Print the measured distance to the serial monitor:
   Serial.print("Mean distance: ");
   Serial.print(distance_cm);
@@ -60,9 +41,9 @@ void loop() {
     analogWrite(11, 255);
   }
   else {
-    analogWrite(11, 255*((distance_cm - 15)/30));
+    analogWrite(11, 255*((float) (distance_cm - 15)/30));
   }
   Serial.println(" cm");
 
-  delay(1000);
+  delay(50);
 }
