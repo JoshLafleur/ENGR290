@@ -17,8 +17,8 @@ int mode = -1;
 // US SENSOR SPECIFIC
 
 // IR SENSOR SPECIFIC
-int trigPin = 14;//Trig – green Jumper 
-int echoPin = 5;    //Echo – yellow Jumper
+int trigPin = 14;   //Trig – green Jumper // 14 --> PB0 
+int echoPin = 5;    //Echo – yellow Jumper // 5 --> PD3
 long duration, cm, inches;
 
 /* Model :
@@ -80,11 +80,15 @@ void setup() {
   if (mode == 0) { // IR SENSOR
   
   } else if (mode == 1) { // US SENSOR
-    pinMode(trigPin, OUTPUT);
-    pinMode(echoPin, INPUT);
+
+    //pinMode(trigPin, OUTPUT); // 14 --> PB0
+    DDRB &= ~(1 << 0);
+    //pinMode(echoPin, INPUT);  // 5  --> PD3
+    DDRD |= (1 << 3);
   }
-  
-  pinMode(11, OUTPUT); // D11 = PB3 = D3
+
+  // pinMode(11, OUTPUT); // D11 = PB3 = D3
+  DDRB &= ~(1 << 3);
 }
 
 void loop() {
