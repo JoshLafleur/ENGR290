@@ -108,8 +108,10 @@ void loop() {
 
   if (distance_cm <= 15) {
     analogWrite(11, 0);
+    digitalWrite(13,LOW);
   } else if (distance_cm > 45) {
     analogWrite(11, 255);
+    digitalWrite(13,HIGH);
   }
   else {
     analogWrite(11, 255*((float) (distance_cm - 15)/30));
