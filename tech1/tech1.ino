@@ -15,10 +15,11 @@ int distance_cm;
 int mode = -1;
 
 // US SENSOR SPECIFIC
+int trigPin = 13; // yellow jumper --> PB5
+int echoPin = 8;// blue jumper --> PB0
 
 // IR SENSOR SPECIFIC
-int trigPin = 14;   //Trig – green Jumper // 14 --> PB0 
-int echoPin = 5;    //Echo – yellow Jumper // 5 --> PD3
+
 long duration, cm, inches;
 
 // We are using model GP2Y0A21YK0F i.e. 1080
@@ -74,10 +75,10 @@ void setup() {
   
   } else if (mode == 1) { // US SENSOR
 
-    //pinMode(trigPin, OUTPUT); // 14 --> PB0
-    DDRB &= ~(1 << 0);
-    //pinMode(echoPin, INPUT);  // 5  --> PD3
-    DDRD |= (1 << 3); 
+    //pinMode(trigPin, OUTPUT); // 14 --> PB5
+    DDRB |= (1 << 5);
+    //pinMode(echoPin, INPUT);  // 5  --> PB0
+    DDRD &= ~(1 << 0); 
   }
 
   // pinMode(11, OUTPUT); // D11 = PB3 = D3
