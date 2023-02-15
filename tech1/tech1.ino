@@ -81,7 +81,7 @@ void setup() {
   }
 
   // pinMode(11, OUTPUT); // D11 = PB3 = D3
-  DDRB &= ~(1 << 3);
+  DDRB |= (1 << 3);
 }
 
 void loop() {
@@ -103,7 +103,12 @@ void loop() {
   if (distance_cm <= 15) {
     //analogWrite(11, 0);
     //digitalWrite(11, HIGH);
-    PORTB |= (1 << 3); // @TODO: is this not working properly? i.e. why does LED D3 not seem to budge....
+    // TEMP FIX because regular analogWrite (linear scaling one) messes up since it influences some bit in a timer register... or smth like that
+    // this fixes the issue because analogWrite(0) isn't actually possible to do DC = 0 on arduino
+    // so the pin is released
+    analogWrite(11, 0);    
+    PORTB &= ~(1 << 3); // @TODO: is this not working properly? i.e. why does LED D3 not seem to budge....
+    
 
     //digitalWrite(13, HIGH); // pin 13 = PB5
     PORTB |= (1 << 5);
@@ -113,7 +118,9 @@ void loop() {
   else if (distance_cm > 45) {
     //analogWrite(11, 255);
     //digitalWrite(11, LOW); // pin 11 = PB3
-    PORTB &= (1 << 3); // @TODO: is this not working properly? i.e. why does LED D3 not seem to budge...
+    // TEMP FIX (see the explanation above)
+    analogWrite(11, 0);
+    PORTB |= (1 << 3); // @TODO: is this not working properly? i.e. why does LED D3 not seem to budge...
     //digitalWrite(13,HIGH); // pin 13 = PB5
     PORTB |= (1 << 5);
   }
