@@ -23,7 +23,11 @@ int echoPin = 8;// blue jumper --> PB0
 long duration, cm, inches;
 
 // We are using model GP2Y0A21YK0F i.e. 1080
+// the code for this class object was taken from here: https://github.com/guillaume-rico/SharpIR/blob/master/SharpIR.cpp
+// and slightly modified as needed
 SharpIR mySensor = SharpIR(IRPin, model);
+// this code was originally taken from here: https://github.com/Martinsos/arduino-lib-hc-sr04/blob/master/src/HCSR04.cpp
+// and slightly modified as needed
 UltraSonicDistanceSensor distanceSensor(12, 8);  // Initialize sensor that uses digital pins 13 and 12.
 
 // function to reset arduino
