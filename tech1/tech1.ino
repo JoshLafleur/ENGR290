@@ -29,6 +29,16 @@ UltraSonicDistanceSensor distanceSensor(12, 8);  // Initialize sensor that uses 
 // function to reset arduino
 void(* resetFunc) (void) = 0; // declare reset function @ address 0
 
+void setBrightnessAndWait(int brightness, int waitTime) {
+    //Serial.print("Setting brightness to: ");
+    //Serial.print(brightness);
+    //Serial.println("/255");
+    
+    OCR2A = brightness;
+    OCR2B = brightness;
+    
+    delay(waitTime);
+}
 
 int selectMode() {
   Serial.println("Which mode would you like to test?");
@@ -49,7 +59,7 @@ int selectMode() {
     return option;
   } else {
     Serial.println("Invalid option, try again");
-    delay(100);
+    _delay_ms(1000);
     resetFunc();
   }
 }
@@ -57,18 +67,19 @@ int selectMode() {
 // the calm before the storm...
 void pauseChamp() {
   Serial.print("Starting in 3 seconds.");
-  delay(1000);
+  _delay_ms(1000);
   Serial.print(".");
-  delay(1000);
+  _delay_ms(1000);
   Serial.println(".");
-  delay(1000);
+  _delay_ms(1000);
 }
 
 void setup() {
   // Begin serial communication at a baudrate of 9600:
   Serial.begin(9600);
 
-  mode = selectMode();
+ // mode = selectMode(); // @TODO: why does using this completely halt the whole arduino process when we introduce baremetal equivalent of analogWrite????
+  mode = 1; // TEMP WORK AROUND
   pauseChamp();
 
   if (mode == 0) { // IR SENSOR
@@ -83,6 +94,18 @@ void setup() {
 
   // pinMode(11, OUTPUT); // D11 = PB3 = D3
   DDRB |= (1 << 3);
+
+    // setup for analogwrite equivalent via PWM
+
+    // OCR = Output Compare Register, 2 for Clock 2
+    OCR2A = 255; // set duty cycles to maximum value
+    OCR2B = 255;
+    
+    // timer/counter2 control register A
+    // set fast PWM mode, non inverting
+    TCCR2A = (1 << COM2A1) | (1 << COM2B1) | (1 << WGM21) | (1 << WGM20); // WGM --> Wave Form Generation Mode
+    // set prescaler to 64 (i.e. divide clock speed of timer 2)
+    TCCR2B = (1 << CS22);
 }
 
 void loop() {
@@ -107,7 +130,8 @@ void loop() {
     // TEMP FIX because regular analogWrite (linear scaling one) messes up since it influences some bit in a timer register... or smth like that
     // this fixes the issue because analogWrite(0) isn't actually possible to do DC = 0 on arduino
     // so the pin is released
-    analogWrite(11, 0);    
+    //analogWrite(11, 0);
+    setBrightnessAndWait(1, 10);    
     PORTB &= ~(1 << 3); // @TODO: is this not working properly? i.e. why does LED D3 not seem to budge....
     
 
@@ -120,18 +144,20 @@ void loop() {
     //analogWrite(11, 255);
     //digitalWrite(11, LOW); // pin 11 = PB3
     // TEMP FIX (see the explanation above)
-    analogWrite(11, 0);
+    //analogWrite(11, 0);
+    setBrightnessAndWait(254, 10);
     PORTB |= (1 << 3); // @TODO: is this not working properly? i.e. why does LED D3 not seem to budge...
     //digitalWrite(13,HIGH); // pin 13 = PB5
     PORTB |= (1 << 5);
   }
   else {
     // spec: "linearly increases from 45 cm to 15 cm"
-    analogWrite(11, (255*((float) (distance_cm - 15)/30)));
+    // analogWrite(11, (255*((float) (distance_cm - 15)/30)));
+    setBrightnessAndWait((255*((float) (distance_cm - 15)/30)), 10);
     //digitalWrite(13, LOW); // pin 13 = PB5
     PORTB &= ~(1 << 5);
   }
   Serial.println(" cm");
 
-  delay(50);
+  _delay_ms(50);
 }
