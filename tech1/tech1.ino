@@ -34,10 +34,6 @@ UltraSonicDistanceSensor distanceSensor(12, 8);  // Initialize sensor that uses 
 void(* resetFunc) (void) = 0; // declare reset function @ address 0
 
 void setBrightnessAndWait(int brightness, int waitTime) {
-    //Serial.print("Setting brightness to: ");
-    //Serial.print(brightness);
-    //Serial.println("/255");
-    
     OCR2A = brightness;
     OCR2B = brightness;
     
@@ -83,7 +79,7 @@ void setup() {
   Serial.begin(9600);
 
  // mode = selectMode(); // @TODO: why does using this completely halt the whole arduino process when we introduce baremetal equivalent of analogWrite????
-  mode = 1; // TEMP WORK AROUND
+  mode = 0; // TEMP WORK AROUND
   pauseChamp();
 
   if (mode == 0) { // IR SENSOR

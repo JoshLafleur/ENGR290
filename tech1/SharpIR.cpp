@@ -47,15 +47,22 @@
 //    The numbers reflect the distance range they are designed for (in cm)
 SharpIR::SharpIR(int irPin, long sensorModel) {
   
+    int distanceSensorPin = 0; // A0
     _irPin=irPin;
     _model=sensorModel;
     
     // Define pin as Input
-    pinMode (_irPin, INPUT);
+    //pinMode (_irPin, INPUT);
+
+    // the higher the prescaler, the lower the frequency
+    // ADEN is for ADC (Analog to Digital Conversion) mode
+    ADCSRA |= (1 << ADEN) | (1 << ADPS2);
+    // this register holds the converted value from the distance sensor
+    ADMUX |= distanceSensorPin | (1 << REFS0);
     
-    #ifdef ARDUINO
-      analogReference(DEFAULT);
-    #endif
+    // #ifdef ARDUINO
+    //   analogReference(DEFAULT);
+    // #endif
 }
 
 // Sort an array
@@ -76,8 +83,6 @@ void SharpIR::sort(int a[], int size) {
 
 // Read distance and compute it
 int SharpIR::distance() {
-  Serial.print("_irPin: ");
-  Serial.println(_irPin);
   // model: 1080
   // sample size: 25
     int ir_val[NB_SAMPLE] = {};
@@ -89,19 +94,19 @@ int SharpIR::distance() {
 
     for (int i=0; i < NB_SAMPLE; i++){
         // Read analog value
-        ir_val[i] = analogRead(_irPin);
+        //ir_val[i] = analogRead(_irPin);
         //adc_val[i] = ADC;
 
-        // // start conversion
-        // ADCSRA |= (1 << ADSC);
+        // start conversion
+        ADCSRA |= (1 << ADSC);
 
-        // // wait until it's clear
-        // while (!(ADCSRA & (1 << ADIF)));
+        // wait until it's clear
+        while (!(ADCSRA & (1 << ADIF)));
 
-        // // Reset to 1 for the next conversion
-        // ADCSRA |= (1 << ADIF);
+        // Reset to 1 for the next conversion
+        ADCSRA |= (1 << ADIF);
 
-        // ir_val[i] = ADC;
+        ir_val[i] = ADC;
     }
     
     // Get the approx median
