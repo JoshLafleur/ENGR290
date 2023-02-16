@@ -76,30 +76,46 @@ void SharpIR::sort(int a[], int size) {
 
 // Read distance and compute it
 int SharpIR::distance() {
-
+  Serial.print("_irPin: ");
+  Serial.println(_irPin);
+  // model: 1080
+  // sample size: 25
     int ir_val[NB_SAMPLE] = {};
+    int adc_val[NB_SAMPLE] = {};
     int distanceCM;
     float current;
     int median;
 
 
-    for (int i=0; i<NB_SAMPLE; i++){
+    for (int i=0; i < NB_SAMPLE; i++){
         // Read analog value
         ir_val[i] = analogRead(_irPin);
+        //adc_val[i] = ADC;
+
+        // // start conversion
+        // ADCSRA |= (1 << ADSC);
+
+        // // wait until it's clear
+        // while (!(ADCSRA & (1 << ADIF)));
+
+        // // Reset to 1 for the next conversion
+        // ADCSRA |= (1 << ADIF);
+
+        // ir_val[i] = ADC;
     }
     
     // Get the approx median
     #if USE_MEDOFMEDIANS
         median = medianOfMedians(ir_val, NB_SAMPLE);
-    #else
+    #else // WE ARE EXECUTING THIS BRANCH
         sort(ir_val, NB_SAMPLE);
         median = ir_val[NB_SAMPLE/2];
     #endif
     
-    if (_model==1080) {
+    if (_model==1080) { // WE ARE EXECUTING THIS BRANCH
         
         // Different expressions required as the Photon has 12 bit ADCs vs 10 bit for Arduinos
-        #ifdef ARDUINO
+        #ifdef ARDUINO // WE ARE EXECUTING THIS BRANCH
           distanceCM = 29.988 * pow(map(median, 0, 1023, 0, 5000)/1000.0, -1.173);
         #elif defined(SPARK)
           distanceCM = 29.988 * pow(map(median, 0, 4095, 0, 5000)/1000.0, -1.173);
