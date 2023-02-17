@@ -131,8 +131,9 @@ int selectMode() {
   msg_transmit("0 --> IR sensor\n", 16);
   msg_transmit("1 --> US sensor\n", 16);
 
-  char *msg = msg_receive(1);
-  int option = atoi(*msg);
+  //char *msg = msg_receive(1);
+  //int option = atoi(*msg);
+  int option = 1;
 
   if (option == 0) {
     msg_transmit("You chose: option 0 --> IR sensor\n", 35);
