@@ -110,7 +110,7 @@ void setBrightnessAndWait(int brightness, int waitTime) {
     OCR2A = brightness;
     OCR2B = brightness;
     
-    delay(waitTime);
+    _delay_ms(waitTime);
 }
 
 int selectMode() {
@@ -159,10 +159,11 @@ void setup() {
   
   } else if (mode == 1) { // US SENSOR
 
-    //pinMode(trigPin, OUTPUT); // 14 --> PB5
-    DDRB |= (1 << 5);
-    //pinMode(echoPin, INPUT);  // 5  --> PB0
-    DDRD &= ~(1 << 0); 
+    // not being used?
+    // //pinMode(trigPin, OUTPUT); // 14 --> PB5
+    // DDRB |= (1 << 5);
+    // //pinMode(echoPin, INPUT);  // 5  --> PB0
+    // DDRD &= ~(1 << 0); 
   }
 
   // pinMode(11, OUTPUT); // D11 = PB3 = D3

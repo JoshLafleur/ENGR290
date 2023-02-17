@@ -12,8 +12,15 @@ UltraSonicDistanceSensor::UltraSonicDistanceSensor(
     this->echoPin = echoPin;
     this->maxDistanceCm = maxDistanceCm;
     this->maxTimeoutMicroSec = maxTimeoutMicroSec;
-    pinMode(triggerPin, OUTPUT);
-    pinMode(echoPin, INPUT);
+    //pinMode(triggerPin, OUTPUT); // 12 --> PB4
+
+    //pinMode(echoPin, INPUT);     // 8 --> PB0
+
+        // not being used?
+    // //pinMode(trigPin, OUTPUT); // 14 --> PB5
+     DDRB |= (1 << 4);
+     ////pinMode(echoPin, INPUT);  // 5  --> PB0
+     DDRD &= ~(1 << 0); 
 }
 
 float UltraSonicDistanceSensor::measureDistanceCm() {
@@ -25,12 +32,16 @@ float UltraSonicDistanceSensor::measureDistanceCm(float temperature) {
     unsigned long maxDistanceDurationMicroSec;
 
     // Make sure that trigger pin is LOW.
-    digitalWrite(triggerPin, LOW);
-    delayMicroseconds(2);
+    //digitalWrite(triggerPin, LOW); // 12 --> PB4
+    PORTB &= ~(1 << 4);
+    _delay_us(2);
     // Hold trigger for 10 microseconds, which is signal for sensor to measure distance.
-    digitalWrite(triggerPin, HIGH);
-    delayMicroseconds(10);
-    digitalWrite(triggerPin, LOW);
+    //digitalWrite(triggerPin, HIGH); // 12 --> PB4
+    PORTB |= (1 << 4);
+    _delay_us(10);
+    //digitalWrite(triggerPin, LOW);
+    PORTB &= ~(1 << 4);
+
     float speedOfSoundInCmPerMicroSec = 0.03313 + 0.0000606 * temperature; // Cair ≈ (331.3 + 0.606 ⋅ ϑ) m/s
 
     // Compute max delay based on max distance with 25% margin in microseconds
