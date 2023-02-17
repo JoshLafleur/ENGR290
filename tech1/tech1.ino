@@ -1,3 +1,10 @@
+// Compiler directives to compute UBBR
+#define F_CPU 16000000 // F_CPU needs to be declared BEFORE including delay.h
+#define BAUD 9600
+#define MYUBBR F_CPU/16/BAUD-1
+
+#include <avr/io.h>
+
 // Include the library:
 #include "SharpIR.h"
 #include "HCSR04.h"
@@ -29,6 +36,72 @@ SharpIR mySensor = SharpIR(IRPin, model);
 // this code was originally taken from here: https://github.com/Martinsos/arduino-lib-hc-sr04/blob/master/src/HCSR04.cpp
 // and slightly modified as needed
 UltraSonicDistanceSensor distanceSensor(12, 8);  // Initialize sensor that uses digital pins 13 and 12.
+
+int index = 0;
+char buffer[256];
+
+// this method was taken from: https://www.geeksforgeeks.org/program-count-digits-integer-3-different-methods
+int countDigit(long long n)
+{
+    if (n == 0)
+        return 1;
+    int count = 0;
+    while (n != 0) {
+        n = n / 10;
+        ++count;
+    }
+    return count;
+}
+
+void USART_init(unsigned int ubrr) {
+    // Set baud rate
+    UBRR0H = (unsigned char)(ubrr >> 8); // Shift needed to clear out first 8 bits
+    UBRR0L = (unsigned char) (ubrr);
+
+    // Enable receiver and transmitter
+    UCSR0B = ((1 << RXEN0) | (1 << TXEN0));
+
+    // Set two stop bits with USBS0, set frame to 8 bits of data with UCSz00
+    UCSR0C = ((1 << USBS0) | (3 << UCSZ00));
+}
+
+void USART_transmit(char data) {
+    // Wait for empty transmit buffer
+    while (!(UCSR0A & (1 << UDRE0)));
+
+    // Place data into buffer and send
+    UDR0 = data;
+}
+
+char USART_receive(void) {
+    // Wait for empty transmit buffer
+    while(!(UCSR0A & (1 << RXC0)));
+
+    // Place data into buffer and send
+    return UDR0;
+}
+
+char* msg_receive(int len) {
+    char msg_buffer[len + 1];
+
+    for (int i = 0; i < len; i++) {
+        // Wait for empty transmit buffer
+        while(!(UCSR0A & (1 << RXC0)));
+
+        // Place data into buffer and send
+        msg_buffer[i] = UDR0;
+    }
+
+    return msg_buffer;
+}
+
+void msg_transmit(char* data, int len) {
+    for (int i = 0; i < len; i++) {
+        USART_transmit(data[i]);
+        //_delay_us(10);
+    }
+}
+
 
 // function to reset arduino
 void(* resetFunc) (void) = 0; // declare reset function @ address 0
@@ -76,10 +149,10 @@ void pauseChamp() {
 
 void setup() {
   // Begin serial communication at a baudrate of 9600:
-  Serial.begin(9600);
+  USART_init(MYUBBR);
 
  // mode = selectMode(); // @TODO: why does using this completely halt the whole arduino process when we introduce baremetal equivalent of analogWrite????
-  mode = 0; // TEMP WORK AROUND
+  mode = 1; // TEMP WORK AROUND
   pauseChamp();
 
   if (mode == 0) { // IR SENSOR
@@ -108,6 +181,9 @@ void setup() {
     TCCR2B = (1 << CS22);
 }
 
+char distance_str[3];
+int numOfDigits = 0;
+
 void loop() {
   // Get a distance measurement and store it as distance_cm:
   //distance_cm = mySensor.distance();
@@ -120,8 +196,14 @@ void loop() {
   }
     
   // Print the measured distance to the serial monitor:
-  Serial.print("Mean distance: ");
-  Serial.print(distance_cm);
+  // Serial.print("Mean distance: ");
+  // Serial.print(distance_cm);
+  msg_transmit("Mean distance: ", 15);
+  itoa(distance_cm, distance_str, 10);
+  numOfDigits = countDigit(distance_cm);
+  
+  msg_transmit(distance_str, numOfDigits);
+  msg_transmit(" cm\n", 4);
 
   // spec: "15cm or less - 100%""
   if (distance_cm <= 15) {
@@ -157,7 +239,6 @@ void loop() {
     //digitalWrite(13, LOW); // pin 13 = PB5
     PORTB &= ~(1 << 5);
   }
-  Serial.println(" cm");
 
   _delay_ms(50);
 }
