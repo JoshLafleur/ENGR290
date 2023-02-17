@@ -121,7 +121,7 @@ int selectMode() {
   msg_transmit("1 --> US sensor\n", 16);
 
   char *msg = msg_receive(1);
-  int option = 0;
+  int option = atoi(*msg);
 
   if (option == 0) {
     msg_transmit("You chose: option 0 --> IR sensor\n", 35);
@@ -150,8 +150,9 @@ void setup() {
   // Begin serial communication at a baudrate of 9600:
   USART_init(MYUBBR);
 
- // mode = selectMode(); // @TODO: why does using this completely halt the whole arduino process when we introduce baremetal equivalent of analogWrite????
-  mode = 1; // TEMP WORK AROUND
+  // ask user to chose IR vs US mode
+  // to reset just close/reopen serial monitor via: ctrl + shift + m
+  mode = selectMode();
   pauseChamp();
 
   // pinMode(11, OUTPUT); // D11 = PB3 = D3
