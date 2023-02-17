@@ -1,10 +1,14 @@
 // Compiler directives to compute UBBR
+// clock goes brr at 16 MHz
 #define F_CPU 16000000 // F_CPU needs to be declared BEFORE including delay.h
+// standard baudrate setting 9600 bits/s
 #define BAUD 9600
-#define MYUBBR F_CPU/16/BAUD-1
+// formula from datasheet page 146 --> UBRRn = ((f_OSC/16 * BAUD) - 1)
+#define MYUBRR F_CPU/16/BAUD-1 // asynchronous normal mode (where double speed operation U2Xn = 0)
 
 #include <avr/io.h>
 #include <string.h>
+#include <avr/delay.h>
 
 // Include the library:
 #include "SharpIR.h"
@@ -36,7 +40,7 @@ long duration, cm, inches;
 SharpIR mySensor = SharpIR(IRPin, model);
 // this code was originally taken from here: https://github.com/Martinsos/arduino-lib-hc-sr04/blob/master/src/HCSR04.cpp
 // and slightly modified as needed
-UltraSonicDistanceSensor distanceSensor(12, 8);  // Initialize sensor that uses digital pins 13 and 12.
+UltraSonicDistanceSensor distanceSensor(12, 8);  // Initialize sensor that uses digital pins 12 --> PB4, 8 --> PB0
 
 int index = 0;
 char buffer[256];
@@ -63,9 +67,11 @@ void USART_init(unsigned int ubrr) {
     UCSR0B = ((1 << RXEN0) | (1 << TXEN0));
 
     // Set two stop bits with USBS0, set frame to 8 bits of data with UCSz00
+    // based on datasheet example code page 149
     UCSR0C = ((1 << USBS0) | (3 << UCSZ00));
 }
 
+// based on C code example page 150
 void USART_transmit(char data) {
     // wait for empty transmit buffer
     while (!(UCSR0A & (1 << UDRE0)));
@@ -74,6 +80,7 @@ void USART_transmit(char data) {
     UDR0 = data;
 }
 
+// based on C code example page 169
 char USART_receive(void) {
     // Wait for empty transmit buffer
     while(!(UCSR0A & (1 << RXC0)));
@@ -82,6 +89,7 @@ char USART_receive(void) {
     return UDR0;
 }
 
+// receive multiple chars given expected input message length
 char* msg_receive(int len) {
     char msg_buffer[len + 1];
 
@@ -96,6 +104,7 @@ char* msg_receive(int len) {
     return msg_buffer;
 }
 
+// send multiple chars given string pointer and length
 void msg_transmit(char* data, int len) {
     for (int i = 0; i < len; i++) {
         USART_transmit(data[i]);
@@ -108,6 +117,8 @@ void msg_transmit(char* data, int len) {
 void(* resetFunc) (void) = 0; // declare reset function @ address 0
 
 void setBrightnessAndWait(int brightness, int waitTime) {
+    // "the result of the compare can be used by the waveform generator to generate a PWM or variable frequency output on the output compare pins (OC2A and OC2B)"
+    // page 117
     OCR2A = brightness;
     OCR2B = brightness;
     
@@ -148,7 +159,7 @@ void pauseChamp() {
 
 void setup() {
   // Begin serial communication at a baudrate of 9600:
-  USART_init(MYUBBR);
+  USART_init(MYUBRR);
 
   // ask user to chose IR vs US mode
   // to reset just close/reopen serial monitor via: ctrl + shift + m
@@ -166,8 +177,11 @@ void setup() {
   
   // timer/counter2 control register A
   // set fast PWM mode, non inverting
+  // page 128
+  // COM2A1 --> clear OC2A on compare match
+  // COM2B1 --> clear OC2B on compare match
   TCCR2A = (1 << COM2A1) | (1 << COM2B1) | (1 << WGM21) | (1 << WGM20); // WGM --> Wave Form Generation Mode
-  // set prescaler to 64 (i.e. divide clock speed of timer 2)
+  // set prescaler to 64 (i.e. divide clock speed of timer 1)
   TCCR2B = (1 << CS22);
 }
 
@@ -186,8 +200,6 @@ void loop() {
   }
     
   // Print the measured distance to the serial monitor:
-  // Serial.print("Mean distance: ");
-  // Serial.print(distance_cm);
   msg_transmit("Mean distance: ", 15);
   itoa(distance_cm, distance_str, 10);
   numOfDigits = countDigit(distance_cm);
@@ -198,27 +210,20 @@ void loop() {
   // spec: "15cm or less - 100%""
   if (distance_cm <= 15) {
     //analogWrite(11, 0);
-    //digitalWrite(11, HIGH);
-    // TEMP FIX because regular analogWrite (linear scaling one) messes up since it influences some bit in a timer register... or smth like that
-    // this fixes the issue because analogWrite(0) isn't actually possible to do DC = 0 on arduino
-    // so the pin is released
-    //analogWrite(11, 0);
     setBrightnessAndWait(1, 10);    
-    PORTB &= ~(1 << 3); // @TODO: is this not working properly? i.e. why does LED D3 not seem to budge....
+    PORTB &= ~(1 << PB3);
     
 
     //digitalWrite(13, HIGH); // pin 13 = PB5
-    PORTB |= (1 << 5);
+    PORTB |= (1 << PB5);
 
   }
   // spec: "45cm or more - 0%"
   else if (distance_cm > 45) {
     //analogWrite(11, 255);
-    //digitalWrite(11, LOW); // pin 11 = PB3
-    // TEMP FIX (see the explanation above)
-    //analogWrite(11, 0);
+    //digitalWrite(11, HIGH); // pin 11 = PB3
     setBrightnessAndWait(254, 10);
-    PORTB |= (1 << 3); // @TODO: is this not working properly? i.e. why does LED D3 not seem to budge...
+    PORTB |= (1 << 3);
     //digitalWrite(13,HIGH); // pin 13 = PB5
     PORTB |= (1 << 5);
   }
@@ -227,7 +232,7 @@ void loop() {
     // analogWrite(11, (255*((float) (distance_cm - 15)/30)));
     setBrightnessAndWait((255*((float) (distance_cm - 15)/30)), 10);
     //digitalWrite(13, LOW); // pin 13 = PB5
-    PORTB &= ~(1 << 5);
+    PORTB &= ~(1 << PB5);
   }
 
   _delay_ms(50);
