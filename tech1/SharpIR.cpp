@@ -92,11 +92,7 @@ int SharpIR::distance() {
     int median;
 
 
-    for (int i=0; i < NB_SAMPLE; i++){
-        // Read analog value
-        //ir_val[i] = analogRead(_irPin);
-        //adc_val[i] = ADC;
-
+    for (int i=0; i < NB_SAMPLE; i++) {
         // start conversion
         ADCSRA |= (1 << ADSC);
 

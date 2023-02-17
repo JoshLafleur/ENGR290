@@ -13,13 +13,8 @@ UltraSonicDistanceSensor::UltraSonicDistanceSensor(
     this->maxDistanceCm = maxDistanceCm;
     this->maxTimeoutMicroSec = maxTimeoutMicroSec;
     //pinMode(triggerPin, OUTPUT); // 12 --> PB4
-
-    //pinMode(echoPin, INPUT);     // 8 --> PB0
-
-        // not being used?
-    // //pinMode(trigPin, OUTPUT); // 14 --> PB5
      DDRB |= (1 << 4);
-     ////pinMode(echoPin, INPUT);  // 5  --> PB0
+    //pinMode(echoPin, INPUT);     // 8 --> PB0
      DDRD &= ~(1 << 0); 
 }
 

@@ -4,6 +4,7 @@
 #define MYUBBR F_CPU/16/BAUD-1
 
 #include <avr/io.h>
+#include <string.h>
 
 // Include the library:
 #include "SharpIR.h"
@@ -66,10 +67,10 @@ void USART_init(unsigned int ubrr) {
 }
 
 void USART_transmit(char data) {
-    // Wait for empty transmit buffer
+    // wait for empty transmit buffer
     while (!(UCSR0A & (1 << UDRE0)));
 
-    // Place data into buffer and send
+    // place data into buffer and send
     UDR0 = data;
 }
 
@@ -77,7 +78,7 @@ char USART_receive(void) {
     // Wait for empty transmit buffer
     while(!(UCSR0A & (1 << RXC0)));
 
-    // Place data into buffer and send
+    // get data recvd from buffer
     return UDR0;
 }
 
@@ -114,24 +115,22 @@ void setBrightnessAndWait(int brightness, int waitTime) {
 }
 
 int selectMode() {
-  Serial.println("Which mode would you like to test?");
-  Serial.println("OPTIONS:");
-  Serial.println("0 --> IR sensor");
-  Serial.println("1 --> US sensor");
+  msg_transmit("Which mode would you like to test?\n", 35);
+  msg_transmit("OPTIONS:\n", 9);
+  msg_transmit("0 --> IR sensor\n", 16);
+  msg_transmit("1 --> US sensor\n", 16);
 
-  // Wait for user input
-  while (Serial.available() == 0);
-
-  int option = Serial.parseInt();
+  char *msg = msg_receive(1);
+  int option = 0;
 
   if (option == 0) {
-    Serial.println("You chose: option 0 --> IR sensor");
+    msg_transmit("You chose: option 0 --> IR sensor\n", 35);
     return option;
   } else if (option == 1) {
-    Serial.println("You chose: option 1 - US sensor");
+    msg_transmit("You chose: option 1 - US sensor\n", 32);
     return option;
   } else {
-    Serial.println("Invalid option, try again");
+    msg_transmit("Invalid option, try again\n", 26);
     _delay_ms(1000);
     resetFunc();
   }
@@ -139,11 +138,11 @@ int selectMode() {
 
 // the calm before the storm...
 void pauseChamp() {
-  Serial.print("Starting in 3 seconds.");
+  msg_transmit("Starting in 3 seconds.", 22);
   _delay_ms(1000);
-  Serial.print(".");
+  msg_transmit(".", 1);
   _delay_ms(1000);
-  Serial.println(".");
+  msg_transmit(".", 1);
   _delay_ms(1000);
 }
 
@@ -155,31 +154,20 @@ void setup() {
   mode = 1; // TEMP WORK AROUND
   pauseChamp();
 
-  if (mode == 0) { // IR SENSOR
-  
-  } else if (mode == 1) { // US SENSOR
-
-    // not being used?
-    // //pinMode(trigPin, OUTPUT); // 14 --> PB5
-    // DDRB |= (1 << 5);
-    // //pinMode(echoPin, INPUT);  // 5  --> PB0
-    // DDRD &= ~(1 << 0); 
-  }
-
   // pinMode(11, OUTPUT); // D11 = PB3 = D3
-  DDRB |= (1 << 3);
+  DDRB |= (1 << PB3); // set external LED D3 to output mode
 
-    // setup for analogwrite equivalent via PWM
+  // setup for analogwrite equivalent via PWM
 
-    // OCR = Output Compare Register, 2 for Clock 2
-    OCR2A = 255; // set duty cycles to maximum value
-    OCR2B = 255;
-    
-    // timer/counter2 control register A
-    // set fast PWM mode, non inverting
-    TCCR2A = (1 << COM2A1) | (1 << COM2B1) | (1 << WGM21) | (1 << WGM20); // WGM --> Wave Form Generation Mode
-    // set prescaler to 64 (i.e. divide clock speed of timer 2)
-    TCCR2B = (1 << CS22);
+  // OCR = Output Compare Register, 2 for Clock 2
+  OCR2A = 255; // set duty cycles to maximum value
+  OCR2B = 255;
+  
+  // timer/counter2 control register A
+  // set fast PWM mode, non inverting
+  TCCR2A = (1 << COM2A1) | (1 << COM2B1) | (1 << WGM21) | (1 << WGM20); // WGM --> Wave Form Generation Mode
+  // set prescaler to 64 (i.e. divide clock speed of timer 2)
+  TCCR2B = (1 << CS22);
 }
 
 char distance_str[3];
