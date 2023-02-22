@@ -263,7 +263,7 @@ void loop() {
     // if programming failed, don't try to do anything
     if (!dmpReady) return;
     // read a packet from FIFO // hi I'm a test change b
-    if (mpu.dmpGetCurrentFIFOPacket(fifoBuffer)) { // Get the Latest packet 
+    if (mpu.dmpGetCurrentFIFOPacket(fifoBuffer)) { // Get the Latest packet //hey im ammar
         #ifdef OUTPUT_READABLE_QUATERNION
             // display quaternion values in easy matrix form: w x y z
             mpu.dmpGetQuaternion(&q, fifoBuffer);
