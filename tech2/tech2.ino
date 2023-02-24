@@ -208,7 +208,7 @@ void setup() {
     Serial.println(F("Initializing DMP..."));
     devStatus = mpu.dmpInitialize();
 
-    mpu.setGyroRange(MPU6050_RANGE_500_DEG); // setting gyro range
+    //mpu.setGyroRange(MPU6050_RANGE_500_DEG); // setting gyro range
     // supply your own gyro offsets here, scaled for min sensitivity
     mpu.setXGyroOffset(220);
     mpu.setYGyroOffset(76);
