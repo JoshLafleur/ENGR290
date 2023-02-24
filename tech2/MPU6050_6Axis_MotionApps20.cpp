@@ -324,7 +324,14 @@ uint8_t MPU6050_6Axis_MotionApps20::dmpInitialize() {
 	setDLPFMode(MPU6050_DLPF_BW_42);
 
 	DEBUG_PRINTLN(F("Setting gyro sensitivity to +/- 2000 deg/sec..."));
-	setFullScaleGyroRange(MPU6050_GYRO_FS_2000);
+  // HEREEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+  /*
+   * #define MPU6050_GYRO_FS_250         0x00 // map 30 CC' --> 180 S
+     #define MPU6050_GYRO_FS_500         0x01 // map 20 CC' --> 90 S, 30 CC --> 90 S
+     #define MPU6050_GYRO_FS_1000        0x02 // map 60 CC' --> 90 S, 30 CC --> 90 S
+     #define MPU6050_GYRO_FS_2000        0x03 // map 90 CC' --> 90 S, 90 CC --> 90 S
+   */
+	setFullScaleGyroRange(MPU6050_GYRO_FS_1000);
 
 	// load DMP code into memory banks
 	DEBUG_PRINT(F("Writing DMP code to MPU memory banks ("));
