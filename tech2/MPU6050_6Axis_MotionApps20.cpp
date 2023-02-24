@@ -331,7 +331,7 @@ uint8_t MPU6050_6Axis_MotionApps20::dmpInitialize() {
      #define MPU6050_GYRO_FS_1000        0x02 // map 60 CC' --> 90 S, 30 CC --> 90 S
      #define MPU6050_GYRO_FS_2000        0x03 // map 90 CC' --> 90 S, 90 CC --> 90 S
    */
-	setFullScaleGyroRange(MPU6050_GYRO_FS_1000);
+	setFullScaleGyroRange(MPU6050_GYRO_FS_2000);
 
 	// load DMP code into memory banks
 	DEBUG_PRINT(F("Writing DMP code to MPU memory banks ("));

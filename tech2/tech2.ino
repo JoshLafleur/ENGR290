@@ -311,11 +311,19 @@ void loop() {
       int servo0Value = map(ypr[0], -90, 90, 0, 180);
       //int servo1Value = map(ypr[1], -90, 90, 0, 180);
       //int servo2Value = map(ypr[2], -90, 90, 180, 0);
+
       
       // Control the servos according to the MPU6050 orientation
       servo0.write(servo0Value);
       //servo1.write(servo1Value);
       //servo2.write(servo2Value);
+
+    Serial.print("Yaw: ");
+    Serial.print(ypr[0]);
+    Serial.print(", Pitch: ");
+    Serial.print(ypr[1]);
+    Serial.print(", Roll: ");
+    Serial.println(ypr[2]);
     }
         #endif
 
