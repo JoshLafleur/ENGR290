@@ -282,6 +282,9 @@ void setup() {
   // Call this function if you need to get the IMU error values for your module
   calculate_IMU_error();
   delay(20);
+
+    // pinMode(11, OUTPUT); // D11 = PB3 = D3
+  DDRB |= (1 << PB3); // set external LED D3 to output mode
 }
 
 
@@ -430,7 +433,8 @@ void calculate_IMU_error() {
     Wire.requestFrom(MPU, 6, true);
     AccX = (Wire.read() << 8 | Wire.read()) / 16384.0 ;
     AccY = (Wire.read() << 8 | Wire.read()) / 16384.0 ;
-    AccZ = (Wire.read() << 8 | Wire.read()) / 16384.0 ;
+    AccZ = (Wire.read() << 8 | Wire.read()) / 16384.0 ;  
+    
     // Sum all readings
     AccErrorX = AccErrorX + ((atan((AccY) / sqrt(pow((AccX), 2) + pow((AccZ), 2))) * 180 / PI));
     AccErrorY = AccErrorY + ((atan(-1 * (AccX) / sqrt(pow((AccY), 2) + pow((AccZ), 2))) * 180 / PI));
@@ -498,6 +502,15 @@ void readAccelerometerData() {
   Serial.print(AccY);
   Serial.print(", AccZ: ");
   Serial.println(AccZ);
+
+  if (AccX <= 0.01) {
+    // D3 OFF
+    PORTB |= (1 << PB3);
+  } else if (AccX >= 1.00) {
+    PORTB &= ~(1 << PB3);
+  } else {
+    // linear... but just OFF for now :'(
+  }
   
   // Calculating Roll and Pitch from the accelerometer data
   accAngleX = (atan(AccY / sqrt(pow(AccX, 2) + pow(AccZ, 2))) * 180 / PI) - 0.58; // AccErrorX ~(0.58) See the calculate_IMU_error()custom function for more details
