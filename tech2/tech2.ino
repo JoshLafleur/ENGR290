@@ -249,7 +249,7 @@ void setup() {
     }
 
     // configure LED for output
-    pinMode(LED_PIN, OUTPUT);
+    pinMode(13, OUTPUT); // pin 13 LED L builtin
     servo0.attach(9);
 }
 
@@ -372,7 +372,13 @@ void loop() {
         #endif
 
         // blink LED to indicate activity
-        blinkState = !blinkState;
-        digitalWrite(LED_PIN, blinkState);
+        //blinkState = !blinkState;
+        //digitalWrite(LED_PIN, blinkState);
+
+        if (ypr[0] >= 90 || ypr[0] <= -90) {
+          digitalWrite(13, HIGH);
+        } else {
+          digitalWrite(13, LOW);
+        }
     }
 }
